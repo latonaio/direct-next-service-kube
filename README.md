@@ -1,15 +1,29 @@
+# direct-next-service
+direct-next-serviceは、aion-core内外で立ち上げられたマイクロサービス間の通信を仲介するマイクロサービスです。
+
 # 概要
-jsonファイルから次のマイクロサービスを立ち上げるための情報を読み取り、その情報をkanbanに渡すサービスです。
-【概要というより仕様の説明なので、もう少しサービスの目的にフォーカスを当ててみましょう】
+aion-core内で立ち上げられるマイクロサービスと、aion-core外で立ち上げられるマイクロサービスは直接通信することができません。
+しかし、aion-core内で立ち上げられたdirect-next-serviceを使って通信の仲介をすることで、aion-core内外のマイクロサービス同士の通信が可能になります。
 
-# 【事前準備
-Dockerfileがbase imageでpython base imageに依存している
-base imageの確認ともしくはbuildをする必要があることを明記する】
+# システム構成図
+direct-next-serviceは、jsonファイルの新規作成を監視し、作成された場合にファイル内の情報を読み取ります。
+その後、その情報をstatus-kanbanに渡すことで、aion-core内外で立ち上げられたマイクロサービス間の通信が可能になります。   
+status-kanbanとは、AIONの通信プロトコルおよびそのプロトコルでやりとりされるデータのことです。
+![direct-next-service](image/direct-next-service.jpeg)
 
+# 動作環境
+direct-next-serviceは、aion-coreのプラットフォーム上での動作を前提としています。
+使用する際は、事前に下記の通りAIONの動作環境を用意してください。   
+- ARM CPU搭載のデバイス(NVIDIA Jetson シリーズ等)   
+- OS: Linux Ubuntu OS   
+- CPU: ARM64   
+- Kubernetes   
+- AION のリソース   
 
-# 起動方法
-kubernatesにdeployされることにより起動されます。
-aion-coreで動かす際は、マイクロサービスの1つとして想定しているため、project.yamlで設定されている通り、aion-coreの起動に伴い自動的に起動されます。
+# 事前準備
+direct-next-serviceのDockerのbase imageとしてpython-base-image（AIONのマイクロサービスで利用するpythonライブラリ及びpython版のベースイメージ）を想定しています。
+そのため、base imageを確認、またはpython-base-imageをbuildする必要があります。   
+※python-base-imageのGithub URL: https://github.com/latonaio/python-base-images   
 
 # セットアップ
 ```
@@ -18,18 +32,27 @@ cd direct-next-service-kube
 make docker-build
 ```
 
-# I/O
+# 起動方法
+kubernatesにdeployされることにより起動されます。   
+aion-core上で動作するマイクロサービスとして想定されているため、project.yamlにマニフェストを記載し、aion-core経由でデプロイしてください。
+
+# Input/Output
 ## input
-フォルダ内を監視し、jsonファイルが新たに作成されたら、その情報を読み込みます。
-【どのフォルダからどう読み込むか】
+aion-core側で指定したパス監視し、その中でjsonファイルが新たに作成されたら、そのjsonファイル内の文字列を辞書に変換することで、情報を読み込みます。
 
 ## output
-以下の情報をkanban_outputに返します。    
-- connection_key：  
-- output_data_path：次のマイクロサービスでoutputに使用されるパス  
-- metadata：次のマイクロサービスを立ち上げるためのメタ情報  
-- device_name：端末名（端末名の記載がない場合、同じ端末に情報が送られる）  
-- file_list：ファイルリスト（ファイルリストがない場合、何も返されない）   
-- process_number = 1  
-【direct-next-service経由で他端末のkannbanにデータが送られるケースもあります。
-どういう条件でそうなるのか、もここで明記する。】
+通信先がローカルの場合：   
+- connection_key     
+- output_data_path：aion-core外のマイクロサービスでoutputに使用されるパス  
+- metadata   
+- file_list：ファイルリスト（ファイルリストがない場合、何も返されない）        
+   
+通信先がリモートの場合：   
+- connection_key   
+- output_data_path   
+- metadata：aion-core外のマイクロサービスのメタ情報  
+- device_name：端末名  
+- file_list   
+- process_number = 1   
+  
+ 

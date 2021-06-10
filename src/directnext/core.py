@@ -7,7 +7,7 @@ from time import sleep
 
 import simplejson as json
 from aion.logger import lprint
-from aion.microservice import main_decorator, Options, WITHOUT_KANBAN
+from aion.microservice import main_decorator, Options
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
@@ -97,15 +97,12 @@ class ChangeHandler(FileSystemEventHandler):
         del self.status_obj
 
 
-@main_decorator(SERVICE_NAME, WITHOUT_KANBAN)
+@main_decorator(SERVICE_NAME)
 def main(opt: Options):
-    lprint("start microservice")
     conn = opt.get_conn()
     num = opt.get_number()
     # get cache kanban
-    lprint("start send set kanban")
-    kanban = conn.get_one_kanban()
-    lprint("success to send set kanban")
+    kanban = conn.set_kanban(SERVICE_NAME, num)
     data_dir = kanban.get_data_path()
     os.makedirs(data_dir, exist_ok=True)
     lprint("watching: " + data_dir)

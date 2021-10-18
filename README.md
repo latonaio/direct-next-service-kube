@@ -15,9 +15,9 @@ status-kanbanとは、AIONの通信プロトコルおよびそのプロトコル
 direct-next-serviceは、aion-coreのプラットフォーム上での動作を前提としています。
 使用する際は、事前に下記の通りAIONの動作環境を用意してください。   
 - ARM CPU搭載のデバイス(NVIDIA Jetson シリーズ等)   
-- OS: Linux Ubuntu OS   
-- CPU: ARM64   
-- Kubernetes   
+- OS: Linux OS     
+- CPU: ARM/AMD/Intel     
+- Kubernetes     
 - AION のリソース   
 
 # 事前準備
@@ -27,7 +27,7 @@ direct-next-serviceのDockerのbase imageとしてpython-base-image（AIONのマ
 
 # セットアップ
 ```
-git clone git@bitbucket.org:latonaio/direct-next-service-kube.git
+git clone git@github.com:latonaio/direct-next-service-kube.git
 cd direct-next-service-kube
 make docker-build
 ```

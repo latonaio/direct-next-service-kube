@@ -1,29 +1,14 @@
-# direct-next-service
-direct-next-serviceは、aion-core内外で立ち上げられたマイクロサービス間の通信を仲介するマイクロサービスです。
-
-# 概要
-aion-core内で立ち上げられるマイクロサービスと、aion-core外で立ち上げられるマイクロサービスは直接通信することができません。
-しかし、aion-core内で立ち上げられたdirect-next-serviceを使って通信の仲介をすることで、aion-core内外のマイクロサービス同士の通信が可能になります。
-
-# システム構成図
-direct-next-serviceは、jsonファイルの新規作成を監視し、作成された場合にファイル内の情報を読み取ります。
-その後、その情報をstatus-kanbanに渡すことで、aion-core内外で立ち上げられたマイクロサービス間の通信が可能になります。   
-status-kanbanとは、AIONの通信プロトコルおよびそのプロトコルでやりとりされるデータのことです。
-![direct-next-service](image/direct-next-service.jpeg)
+# direct-next-service-kube
+direct-next-service-kube は、マイクロサービス間の通信を仲介するマイクロサービスです。  
+direct-next-service-kube は、jsonファイル(メッセージファイル)の生成を監視し、生成された場合にファイル内の情報を読み取ります。  
+そして、その情報がメッセージングアーキテクチャに渡されることで、マイクロサービス間の通信が可能になります。   
 
 # 動作環境
-direct-next-serviceは、aion-coreのプラットフォーム上での動作を前提としています。
-使用する際は、事前に下記の通りAIONの動作環境を用意してください。   
-- ARM CPU搭載のデバイス(NVIDIA Jetson シリーズ等)   
+direct-next-serviceは、下記の動作環境を前提としています。  
 - OS: Linux OS     
 - CPU: ARM/AMD/Intel     
 - Kubernetes     
 - AION のリソース   
-
-# 事前準備
-direct-next-serviceのDockerのbase imageとしてpython-base-image（AIONのマイクロサービスで利用するpythonライブラリ及びpython版のベースイメージ）を想定しています。
-そのため、base imageを確認、またはpython-base-imageをbuildする必要があります。   
-※python-base-imageのGithub URL: https://github.com/latonaio/python-base-images   
 
 # セットアップ
 ```
@@ -33,26 +18,28 @@ make docker-build
 ```
 
 # 起動方法
-kubernatesにdeployされることにより起動されます。   
-aion-core上で動作するマイクロサービスとして想定されているため、project.yamlにマニフェストを記載し、aion-core経由でデプロイしてください。
+direct-next-service-kube を aion-core 上で動作させる場合、aion-service-definitions/services.ymlに定義を記載してください。  
 
 # Input/Output
 ## input
-aion-core側で指定したパス監視し、その中でjsonファイルが新たに作成されたら、そのjsonファイル内の文字列を辞書に変換することで、情報を読み込みます。
+指定されたパスを監視し、その中でメッセージファイルが新たに作成されたら、そのファイル内の情報を読み込みます。
 
 ## output
-通信先がローカルの場合：   
+通信先がローカル(内部のマイクロサービス)である場合：  
+```
 - connection_key     
-- output_data_path：aion-core外のマイクロサービスでoutputに使用されるパス  
+- output_data_path：内部のマイクロサービスでoutputに使用されるパス  
 - metadata   
-- file_list：ファイルリスト（ファイルリストがない場合、何も返されない）        
-   
-通信先がリモートの場合：   
+- file_list：ファイルリスト（ファイルリストがない場合、何も返されない）   
+```
+
+通信先がリモート(外部のマイクロサービス)である場合：   
+```
 - connection_key   
 - output_data_path   
-- metadata：aion-core外のマイクロサービスのメタ情報  
+- metadata：外部のマイクロサービスのメタ情報  
 - device_name：端末名  
 - file_list   
 - process_number = 1   
-  
+```  
  
